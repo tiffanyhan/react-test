@@ -1,4 +1,6 @@
 import React, { Component } from 'react';
+import { createStore, combineReducers } from 'redux';
+import { Provider, connect } from 'react-redux';
 import logo from './logo.svg';
 import './App.css';
 
@@ -7,6 +9,107 @@ const products = [
   {"id": 2, "title": "H&M T-Shirt White", "price": 10.99, "inventory": 10},
   {"id": 3, "title": "Charli XCX - Sucker CD", "price": 19.99, "inventory": 5}
 ];
+
+const findProductById = (products, id) => (
+  products.find(product => product.id === id)
+);
+
+function productsReducer(state=products, action) {
+  switch (action.type) {
+    case 'ADD_TO_CART': {
+      const id = action.id;
+
+      state.map((product) => {
+        if (product.id === id) {
+          return Object.assign({}, product, {
+            inventory: product.inventory - 1
+          });
+        } else {
+          return product;
+        }
+      });
+    }
+
+    case 'ADD_PRODUCT': {
+
+    }
+
+    case 'UPDATE_PRODUCT': {
+
+    }
+
+    case 'REMOVE_PRODUCT': {
+
+    }
+
+    default: {
+      return state;
+    }
+  }
+}
+
+function productsInCartReducer(state=[], action) {
+  switch (action.type) {
+    case 'ADD_TO_CART': {
+      const id = action.id;
+      const isProductInCart = (id) => (
+        state.some(product => product.id === id)
+      );
+      let freshCart;
+
+      if (!isProductInCart(id)) {
+        const productToAdd = Object.assign(
+          {}, findProductById(state, id), {inventory: 0}
+        );
+        freshCart = state.concat(productToAdd);
+      }
+
+      return freshCart.map((product) => {
+        if (product.id === id) {
+          return Object.assign({}, product, {
+            inventory: product.inventory + 1
+          });
+        } else {
+          return product;
+        }
+      });
+    }
+
+    case 'CHECKOUT': {
+
+    }
+
+    case 'REMOVE_PRODUCT': {
+
+    }
+
+    default: {
+      return state;
+    }
+  }
+}
+
+function productBeingEditedReducer(state={}, action) {
+  switch (action.type) {
+    case 'EDIT_PRODUCT':
+    default: {
+      return state;
+    }
+  }
+}
+
+function addToCart(id) {
+  return {
+    type: 'ADD_TO_CART',
+    id: id,
+  };
+}
+
+const reducer = combineReducers({
+  products: productsReducer,
+  productsInCart: productsInCartReducer,
+  productBeingEdited: productBeingEditedReducer,
+});
 
 class Store extends React.Component {
   state = {
