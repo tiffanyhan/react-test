@@ -163,16 +163,10 @@ const reducer = combineReducers({
 
 const store = createStore(reducer);
 
-const WrappedApp = () => (
-  <Provider store={store}>
-    <App />
-  </Provider>
-);
-
 const App = () => (
   <div>
-    <Products />
-    <Cart />
+    <ProductsContainer />
+    {/*}<Cart />{*/}
   </div>
 );
 
@@ -185,8 +179,8 @@ const mapStateToProductsProps = (state) => {
 
 const mapDispatchToProductsProps = (dispatch) => (
   {
-    addToCart: (product) => (
-      dispatch(addToCart(product))
+    addToCart: (id) => (
+      dispatch(addToCart(id))
     ),
     addProduct: (product) => (
       dispatch(addProduct(product))
@@ -215,22 +209,16 @@ const Products = (props) => (
   </div>
 );
 
-const ProductsContainer = connect(
-  mapStateToProductsProps,
-  mapDispatchToProductsProps
-)(Products);
-
 const ProductList = (props) => {
   const products = props.products.map((product) => (
     <Product
-      id={product.id}
       key={product.id}
       title={product.title}
       price={product.price}
       inventory={product.inventory}
-      addToCart={props.addToCart}
-      editProduct={props.editProduct}
-      removeProduct={props.removeProduct}
+      addToCart={() => props.addToCart(product.id)}
+      editProduct={() => props.editProduct(product.id)}
+      removeProduct={() => props.removeProduct(product.id)}
     />
   ));
 
@@ -250,18 +238,16 @@ const Product = (props) => (
       inventory={props.inventory}
     />
     <AddToCartButton
-      id={props.id}
       inventory={props.inventory}
       addToCart={props.addToCart}
     />
     <EditProductButton
-      id={props.id}
       editProduct={props.editProduct}
     />
     <RemoveProductButton
-      id={props.id}
       removeProduct={props.removeProduct}
     />
+    <hr/>
   </div>
 );
 
@@ -272,7 +258,6 @@ const ProductDetail = (props) => (
     <span>{props.price}</span>
     <span> x </span>
     <span>{props.inventory}</span>
-    <hr/>
   </div>
 );
 
@@ -280,7 +265,7 @@ const AddToCartButton = (props) => {
   if (props.inventory > 0) {
     return (
       <div>
-        <button onClick={props.addToCart(props.id)}>Add to Cart</button>
+        <button onClick={props.addToCart}>Add to Cart</button>
       </div>
     );
   } else {
@@ -294,13 +279,13 @@ const AddToCartButton = (props) => {
 
 const EditProductButton = (props) => (
   <div>
-    <button onClick={props.editProduct(props.id)}>Edit Product</button>
+    <button onClick={props.editProduct}>Edit Product</button>
   </div>
 );
 
 const RemoveProductButton = (props) => (
   <div>
-    <button onClick={props.removeProduct(props.id)}>Remove Product</button>
+    <button onClick={props.removeProduct}>Remove Product</button>
   </div>
 );
 
@@ -443,5 +428,16 @@ class CartCheckout extends React.Component {
 }
 
 // ReactDOM.render(<Store />, document.getElementById('content'));
+
+const ProductsContainer = connect(
+  mapStateToProductsProps,
+  mapDispatchToProductsProps
+)(Products);
+
+const WrappedApp = () => (
+  <Provider store={store}>
+    <App />
+  </Provider>
+);
 
 export default WrappedApp;
