@@ -161,106 +161,70 @@ const reducer = combineReducers({
   productBeingEditedId: productBeingEditedIdReducer,
 });
 
+const store = createStore(reducer);
+
+const WrappedApp = () => ( 
+  <Provider store={store}>
+    <App />
+  </Provider>
+);
+
+const App = () => (
+  <div>
+    <Products />
+    <Cart />
+  </div>
+);
+
+const mapStateToProductsProps = (state) => {
+  return {
+    products: state.products
+  }
+}
+
+const mapDispatchToProductsProps = (dispatch) => (
+  {
+    addToCart: (product) => (
+      dispatch(addToCart(product))
+    ),
+    editProduct: (id) => (
+      dispatch(editProduct(id))
+    ),
+    removeProduct: (id) => (
+      dispatch(removeProduct(id))
+    ),
+  }
+);
+
+const Products = connect(
+  mapStateToProductsProps,
+  mapDispatchToProductsProps
+)(ProductList);
+
+const ProductList = (props) => {
+  const products = props.products.map((product) => (
+    <Product
+      id={product.id}
+      key={product.id}
+      title={product.title}
+      price={product.price}
+      inventory={product.inventory}
+      addToCart={props.addToCart}
+      editProduct={props.editProduct}
+      removeProduct={props.removeProduct}
+    />
+  ));
+
+  return (
+    <div>
+      <h2>Products</h2>
+      {products}
+    </div>
+  );
+};
+
+
 class Store extends React.Component {
-  state = {
-    products: products,
-    productsInCart: [],
-    productBeingEdited: {},
-  }
-
-  handleAddToCart = (id) => (
-    this.updateInventoryQuantities(id)
-  )
-
-  handleCheckout = () => {
-    this.emptyCart();
-  }
-
-  updateInventoryQuantities = (id) => {
-    this.setState({
-      products: this.updatedProductInventories(id),
-      productsInCart: this.updatedProductInCartInventories(id),
-    })
-  }
-
-  updatedProductInventories = (id) => (
-    this.state.products.map((product) => {
-      if (product.id === id) {
-        return Object.assign({}, product, {
-          inventory: product.inventory - 1
-        });
-      } else {
-        return product;
-      }
-    })
-  )
-
-  updatedProductInCartInventories = (id) => {
-    let freshCart = [...this.state.productsInCart]
-
-    if (!this.isProductInCart(id)) {
-      const productToAdd = Object.assign({}, this.findProductById(id), {inventory: 0});
-      freshCart = freshCart.concat(productToAdd);
-    }
-
-    return freshCart.map((product) => {
-      if (product.id === id) {
-        return Object.assign({}, product, {
-          inventory: product.inventory + 1
-        });
-      } else {
-        return product;
-      }
-    })
-  }
-
-  isProductInCart = (id) => (
-    this.state.productsInCart.some((product) => (product.id === id))
-  )
-
-  findProductById = (id) => (
-    this.state.products.find((product) => (product.id === id))
-  )
-
-  emptyCart = () => {
-    this.setState({
-      productsInCart: [],
-    });
-  }
-
-  editProduct = (id) => {
-    const product = this.findProductById(id);
-    this.setState({
-      productBeingEdited: product,
-    });
-  }
-
-  nextId = () => {
-    return Math.max(...this.state.products.map((product) => product.id)) + 1;
-  }
-
-  onFormSubmit = (freshProduct) => {
-    const current = this.state.productBeingEdited;
-
-    if (current.id) {
-      const products = this.state.products.map((product) => {
-        if (product.id === current.id) {
-          return Object.assign({}, freshProduct, {id: product.id});
-        } else {
-          return product;
-        }
-      });
-      this.setState({ products, productBeingEdited: {} });
-
-    } else {
-      const freshProductWithId = Object.assign({}, freshProduct, {id: this.nextId()});
-
-      this.setState({
-        products: [...this.state.products, freshProductWithId],
-      });
-    }
-  }
-
   render() {
     return (
       <div>
@@ -508,4 +472,4 @@ class CartCheckout extends React.Component {
 
 // ReactDOM.render(<Store />, document.getElementById('content'));
 
-export default Store;
+export default WrappedApp;
