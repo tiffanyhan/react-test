@@ -31,7 +31,12 @@ function productsReducer(state=products, action) {
     }
 
     case 'ADD_PRODUCT': {
+      const nextId = () => {
+        return Math.max(...state.map((product) => product.id)) + 1;
+      }
+      const product = Object.assign({}, action.product, {id: nextId()});
 
+      return [...state, product]
     }
 
     case 'UPDATE_PRODUCT': {
@@ -89,9 +94,10 @@ function productsInCartReducer(state=[], action) {
   }
 }
 
-function productBeingEditedReducer(state={}, action) {
+function productBeingEditedIdReducer(state=undefined, action) {
   switch (action.type) {
     case 'EDIT_PRODUCT':
+      return action.id;
     default: {
       return state;
     }
@@ -101,14 +107,28 @@ function productBeingEditedReducer(state={}, action) {
 function addToCart(id) {
   return {
     type: 'ADD_TO_CART',
-    id: id,
+    id,
+  };
+}
+
+function addProduct(product) {
+  return {
+    type: 'ADD_PRODUCT',
+    product,
+  };
+}
+
+function editProduct(id) {
+  return {
+    type: 'EDIT_PRODUCT',
+    id,
   };
 }
 
 const reducer = combineReducers({
   products: productsReducer,
   productsInCart: productsInCartReducer,
-  productBeingEdited: productBeingEditedReducer,
+  productBeingEditedId: productBeingEditedIdReducer,
 });
 
 class Store extends React.Component {
