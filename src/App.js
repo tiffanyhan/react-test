@@ -104,7 +104,7 @@ function productsInCartReducer(state=[], action) {
   }
 }
 
-function productBeingEditedIdReducer(state=undefined, action) {
+function productBeingEditedIdReducer(state=0, action) {
   switch (action.type) {
     case 'EDIT_PRODUCT':
       return action.id;
@@ -163,7 +163,7 @@ const reducer = combineReducers({
 
 const store = createStore(reducer);
 
-const WrappedApp = () => ( 
+const WrappedApp = () => (
   <Provider store={store}>
     <App />
   </Provider>
@@ -178,7 +178,8 @@ const App = () => (
 
 const mapStateToProductsProps = (state) => {
   return {
-    products: state.products
+    products: state.products,
+    productBeingEditedId: state.productBeingEditedId,
   }
 }
 
@@ -187,8 +188,14 @@ const mapDispatchToProductsProps = (dispatch) => (
     addToCart: (product) => (
       dispatch(addToCart(product))
     ),
+    addProduct: (product) => (
+      dispatch(addProduct(product))
+    ),
     editProduct: (id) => (
       dispatch(editProduct(id))
+    ),
+    updateProduct: (product) => (
+      dispatch(updateProduct(product))
     ),
     removeProduct: (id) => (
       dispatch(removeProduct(id))
@@ -196,10 +203,22 @@ const mapDispatchToProductsProps = (dispatch) => (
   }
 );
 
-const Products = connect(
+const Products = (props) => (
+  <div>
+    <ProductList
+      products={props.products}
+      addToCart={props.addToCart}
+      editProduct={props.editProduct}
+      removeProduct={props.removeProduct}
+    />
+    <ProductForm props={props} />
+  </div>
+);
+
+const ProductsContainer = connect(
   mapStateToProductsProps,
   mapDispatchToProductsProps
-)(ProductList);
+)(Products);
 
 const ProductList = (props) => {
   const products = props.products.map((product) => (
@@ -223,114 +242,67 @@ const ProductList = (props) => {
   );
 };
 
+const Product = (props) => (
+  <div>
+    <ProductDetail
+      title={props.title}
+      price={props.price}
+      inventory={props.inventory}
+    />
+    <AddToCartButton
+      id={props.id}
+      inventory={props.inventory}
+      addToCart={props.addToCart}
+    />
+    <EditProductButton
+      id={props.id}
+      editProduct={props.editProduct}
+    />
+    <RemoveProductButton
+      id={props.id}
+      removeProduct={props.removeProduct}
+    />
+  </div>
+);
 
-class Store extends React.Component {
-  render() {
+const ProductDetail = (props) => (
+  <div>
+    <span>{props.title}</span>
+    <span> - </span>
+    <span>{props.price}</span>
+    <span> x </span>
+    <span>{props.inventory}</span>
+    <hr/>
+  </div>
+);
+
+const AddToCartButton = (props) => {
+  if (props.inventory > 0) {
     return (
       <div>
-        <ProductList
-          products={this.state.products}
-          addToCart={this.handleAddToCart}
-          editProduct={this.editProduct}
-        />
-        <ProductForm
-          id={this.state.productBeingEdited.id}
-          title={this.state.productBeingEdited.title}
-          inventory={this.state.productBeingEdited.inventory}
-          price={this.state.productBeingEdited.price}
-          onFormSubmit={this.onFormSubmit}
-        />
-        <Cart
-          productsInCart={this.state.productsInCart}
-          handleCheckout={this.handleCheckout}
-        />
+        <button onClick={props.addToCart(props.id)}>Add to Cart</button>
+      </div>
+    );
+  } else {
+    return (
+      <div>
+        <button disabled={true}>Sold Out</button>
       </div>
     );
   }
-}
+};
 
-class ProductList extends React.Component {
-  render() {
-    const products = this.props.products.map((product) => (
-      <Product
-        id={product.id}
-        key={product.id}
-        title={product.title}
-        price={product.price}
-        inventory={product.inventory}
-        addToCart={this.props.addToCart}
-        editProduct={this.props.editProduct}
-      />
-    ));
+const EditProductButton = (props) => (
+  <div>
+    <button onClick={props.editProduct(props.id)}>Edit Product</button>
+  </div>
+);
 
-    return (
-      <div>
-        <h2>Products</h2>
-        {products}
-      </div>
-    );
-  }
-}
-
-class Product extends React.Component {
-  render() {
-    return (
-      <div>
-        <span>{this.props.title}</span>
-        <span> - </span>
-        <span>{this.props.price}</span>
-        <span> x </span>
-        <span>{this.props.inventory}</span>
-        <AddToCartButton
-          id={this.props.id}
-          inventory={this.props.inventory}
-          addToCart={this.props.addToCart}
-        />
-        <EditProductButton
-          id={this.props.id}
-          editProduct={this.props.editProduct}
-        />
-        <hr/>
-      </div>
-    );
-  }
-}
-
-class AddToCartButton extends React.Component {
-  handleAddToCart = () => (
-    this.props.addToCart(this.props.id)
-  )
-
-  render() {
-    if (this.props.inventory > 0) {
-      return (
-        <div>
-          <button onClick={this.handleAddToCart}>Add to Cart</button>
-        </div>
-      );
-    } else {
-      return (
-        <div>
-          <button disabled={true}>Sold Out</button>
-        </div>
-      );
-    }
-  }
-}
-
-class EditProductButton extends React.Component {
-  handleEditProduct = () => {
-    return this.props.editProduct(this.props.id);
-  }
-
-  render() {
-    return (
-      <div>
-        <button onClick={this.handleEditProduct}>Edit Product</button>
-      </div>
-    );
-  }
-}
+const RemoveProductButton = (props) => (
+  <div>
+    <button onClick={props.removeProduct(props.id)}>Remove Product</button>
+  </div>
+);
 
 class ProductForm extends React.Component {
   state = {
