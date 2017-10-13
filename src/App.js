@@ -197,17 +197,30 @@ const mapDispatchToProductsProps = (dispatch) => (
   }
 );
 
-const Products = (props) => (
-  <div>
-    <ProductList
-      products={props.products}
-      addToCart={props.addToCart}
-      editProduct={props.editProduct}
-      removeProduct={props.removeProduct}
+const Products = (props) => {
+  const productForm = if (props.productBeingEditedId) {
+    <ProductForm 
+      product={findProductById(props.products, props.productBeingEditedId)}
+      updateProduct={() => props.updateProduct(props.productBeingEditedId)}
     />
-    <ProductForm props={props} />
-  </div>
-);
+  } else {
+    <ProductForm 
+      addProduct={props.addProduct}
+    />
+  }
+    
+  return (
+    <div>
+      <ProductList
+        products={props.products}
+        addToCart={props.addToCart}
+        editProduct={props.editProduct}
+        removeProduct={props.removeProduct}
+      />
+      {productForm}
+    </div>
+  );
+};
 
 const ProductList = (props) => {
   const products = props.products.map((product) => (
