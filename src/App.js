@@ -198,16 +198,18 @@ const mapDispatchToProductsProps = (dispatch) => (
 );
 
 const Products = (props) => {
-  const productForm = if (props.productBeingEditedId) {
+  const productForm = props.productBeingEditedId ?
     <ProductForm 
       product={findProductById(props.products, props.productBeingEditedId)}
-      updateProduct={() => props.updateProduct(props.productBeingEditedId)}
+      onFormSubmit={props.updateProduct}
     />
-  } else {
-    <ProductForm 
-      addProduct={props.addProduct}
+  :
+    <ProductForm
+      product={{}}
+      onFormSubmit={props.addProduct}
     />
-  }
+  ;
+  // seems against some sorta style guide out there
     
   return (
     <div>
@@ -328,18 +330,16 @@ class ProductForm extends React.Component {
       inventory: this.state.inventory,
       price: this.state.price,
     });
-  }
 
-  componentWillReceiveProps(nextProps) {
     this.setState({
-      title: nextProps.title || '',
-      inventory: nextProps.inventory || '',
-      price: nextProps.price || '',
+      title: '',
+      inventory: '',
+      price: '',
     });
   }
 
   render() {
-    const submitText = this.props.id ? 'Update' : 'Create';
+    const submitText = this.props.product.id ? 'Update' : 'Create';
     return (
       <div>
         <form onSubmit={this.onFormSubmit}>
