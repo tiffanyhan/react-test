@@ -26,8 +26,7 @@ function productsReducer(state=products, action) {
           });
         } else {
           return product;
-        }
-      });
+        }      });
     }
 
     case 'ADD_PRODUCT': {
@@ -40,11 +39,20 @@ function productsReducer(state=products, action) {
     }
 
     case 'UPDATE_PRODUCT': {
-
+      return state.map((product) => {
+        if (product.id === action.product.id) {
+// for form add the id when we're editing TODO TODO TODO BAGUETTE TODO TODO TODO
+          return Object.assign({}, action.product);
+        } else {
+          return product;
+        }
+      });
     }
 
     case 'REMOVE_PRODUCT': {
-
+      return state.filter((product) => (
+        product.id !== action.id
+      ));
     }
 
     default: {
@@ -81,11 +89,13 @@ function productsInCartReducer(state=[], action) {
     }
 
     case 'CHECKOUT': {
-
+      return [];
     }
 
     case 'REMOVE_PRODUCT': {
-
+      return state.filter((product) => (
+        product.id !== action.id
+      ));
     }
 
     default: {
@@ -122,6 +132,26 @@ function editProduct(id) {
   return {
     type: 'EDIT_PRODUCT',
     id,
+  };
+}
+
+function updateProduct(product) {
+  return {
+    type: 'UPDATE_PRODUCT',
+    product,
+  };
+}
+
+function removeProduct(id) {
+  return {
+    type: 'REMOVE_PRODUCT',
+    id,
+  };
+}
+
+function checkout() {
+  return {
+    type: 'CHECKOUT'
   };
 }
 
