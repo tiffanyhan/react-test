@@ -39,6 +39,7 @@ function productsReducer(state=products, action) {
     }
 
     case 'UPDATE_PRODUCT': {
+      console.log('productsReducer called');
       return state.map((product) => {
         if (product.id === action.product.id) {
 // for form add the id when we're editing TODO TODO TODO BAGUETTE TODO TODO TODO
@@ -106,8 +107,13 @@ function productsInCartReducer(state=[], action) {
 
 function productBeingEditedIdReducer(state=0, action) {
   switch (action.type) {
-    case 'EDIT_PRODUCT':
+    case 'EDIT_PRODUCT': {
+      console.log('productBeingEditedIdReducer called');
       return action.id;
+    }
+    case 'UPDATE_PRODUCT': {
+      return 0;
+    }
     default: {
       return state;
     }
@@ -199,7 +205,7 @@ const mapDispatchToProductsProps = (dispatch) => (
 
 const Products = (props) => {
   const productForm = props.productBeingEditedId ?
-    <ProductForm 
+    <ProductForm
       product={findProductById(props.products, props.productBeingEditedId)}
       onFormSubmit={props.updateProduct}
     />
@@ -210,7 +216,7 @@ const Products = (props) => {
     />
   ;
   // seems against some sorta style guide out there
-    
+
   return (
     <div>
       <ProductList
@@ -325,16 +331,34 @@ class ProductForm extends React.Component {
 
   onFormSubmit = (evt) => {
     evt.preventDefault();
-    this.props.onFormSubmit({
+
+    let product = {
       title: this.state.title,
       inventory: this.state.inventory,
       price: this.state.price,
-    });
+    }
+
+    if (this.props.product.id) {
+      product = Object.assign(
+        {}, product, {id: this.props.product.id}
+      );
+    }
+
+    this.props.onFormSubmit(product);
 
     this.setState({
       title: '',
       inventory: '',
       price: '',
+    });
+  }
+
+  componentWillReceiveProps(nextProps) {
+    console.log('next Props: ' + nextProps);
+    this.setState({
+      title: nextProps.product.title || '',
+      inventory: nextProps.product.inventory || '',
+      price: nextProps.product.price || '',
     });
   }
 
